@@ -2,9 +2,9 @@
 import pyopenms
 import sys
 import os
+import re
 
 def splitPolarity(raw):
-
     pos = pyopenms.MSExperiment()
     neg = pyopenms.MSExperiment()
 
@@ -23,8 +23,22 @@ def splitPolarity(raw):
 
     return pos, neg
 
+def groupSamplePools(files):
+    ret = dict()
+    for file in files:
+        match = re.search('^(Pool_[0-9]+|DMSO)', os.path.basename(file))
+        curGroup = match.group(0)
+        if curGroup in ret.keys():
+            ret[curGroup].append(file)
+        else:
+            sys.stdout.write('Found {}\n'.format(curGroup))
+            ret[curGroup] = [file]
+
+    return ret
+
 def processPools(fileList, args):
-    print('hello')
+    groups = groupSamplePools(fileList)
+    print(groups)
 
 def splitAllPolarities(fileList, args):
     for file in fileList:
@@ -42,6 +56,4 @@ def splitAllPolarities(fileList, args):
         #write files
         pyopenms.MzDataFile().store(posOfname, pos)
         pyopenms.MzDataFile().store(negOfname, neg)
-
-
 
