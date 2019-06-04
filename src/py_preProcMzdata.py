@@ -8,11 +8,12 @@ import datProc
 
 MZ_EXT = '.mzdata'
 
-def main(argv):
-    parser = argparse.ArgumentParser(prog = 'py_preProcMzdata')
+def main():
+    parser = argparse.ArgumentParser(prog = 'py_preProcMzdata',
+                                     description='Split polarity switching scans into separate files.')
 
-    parser.add_argument('-a', '--align', choices = [0, 1], type = int, default = 1,
-                        help = 'Choose whether to run map allignment by pool. Default is 0.')
+    #parser.add_argument('-a', '--align', choices = [0, 1], type = int, default = 0,
+    #                    help = 'Choose whether to run map allignment by pool. Default is 0.')
     parser.add_argument('-e', '--ext', default = MZ_EXT,
                         help = 'Specify extension of mzData files. Default is {}'.format(MZ_EXT))
 

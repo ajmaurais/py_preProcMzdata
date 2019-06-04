@@ -5,8 +5,8 @@ import os
 import re
 
 def splitPolarity(raw):
-    pos = pyopenms.MSExperiment()
-    neg = pyopenms.MSExperiment()
+    pos = pyopenms.PeakMap()
+    neg = pyopenms.PeakMap()
 
     for scan in raw.getSpectra():
         if scan.getInstrumentSettings().getPolarity() == pyopenms.IonSource.Polarity.POSITIVE:
@@ -26,7 +26,7 @@ def splitPolarity(raw):
 def groupSamplePools(files):
     ret = dict()
     for file in files:
-        match = re.search('^(Pool_[0-9]+|DMSO)', os.path.basename(file))
+        match = re.search('^(Pool_[0-9]+|DMSO_[A-Z]?)', os.path.basename(file))
         curGroup = match.group(0)
         if curGroup in ret.keys():
             ret[curGroup].append(file)
@@ -38,7 +38,29 @@ def groupSamplePools(files):
 
 def processPools(fileList, args):
     groups = groupSamplePools(fileList)
-    print(groups)
+
+    # read raw input files and process
+    for key, value in groups.items():
+        sys.stdout.write('Working on {}\n'.format(key))
+
+        # load files and split polarity
+        posRuns = list()
+        negRuns = list()
+        raw = pyopenms.MSExperiment()
+        for file in value:
+            pyopenms.MzDataFile().load(file, raw)
+            pos, neg = splitPolarity(raw)
+            posRuns.append(pos)
+            negRuns.append(neg)
+
+        # run alignment
+        alg = pyopenms.MapAlignmentAlgorithmIdentification()
+        posTrans = list()
+        posTrans = [pyopenms.TransformationDescription() for x in range(1)]
+        #negTrans = [pyopenms.TransformationDescription() for x in range(len(negRuns))]
+
+        alg.align(posRuns, posTrans)
+
 
 def splitAllPolarities(fileList, args):
     for file in fileList:
